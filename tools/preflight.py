@@ -96,6 +96,13 @@ idea_missing = sorted(need - ideas)
 print('4) 理念定义 %d | 引用 %d | 缺失 %d' % (len(ideas), len(need), len(idea_missing)))
 
 # ---------- 5. 本地化 ----------
+# 先收集所有国策树 id，后面要拿来把它们从"需要本地化的 key"里剔掉
+trees = set()
+for g in scan(MOD, 'common/national_focus/*.txt'):
+    trees |= set(re.findall(r'focus_tree = \{\s*\n\s*id = ([A-Za-z0-9_]+)', rd(g), re.M))
+for f in scan(PARENT, 'common/national_focus/*.txt'):
+    trees |= set(re.findall(r'focus_tree = \{\s*\n\s*id = ([A-Za-z0-9_]+)', rd(f), re.M))
+
 keys = set()
 for f in scan(MOD, 'localisation/**/*.yml'):
     raw = open(f, 'rb').read()
@@ -105,7 +112,8 @@ for f in scan(MOD, 'localisation/**/*.yml'):
                            raw.decode('utf-8-sig', 'replace'), re.M))
 want = set()
 for f in scan(MOD, 'common/national_focus/*.txt'):
-    want |= set(re.findall(r'^\t\s*id = ([A-Za-z0-9_]+)', rd(f), re.M))
+    want |= set(re.findall(r'^\s*id = ([A-Za-z0-9_]+)', rd(f), re.M))
+want -= trees  # 树 id 本身不需要本地化
 for f in set(ev_files):
     s = rd(f)
     want |= set(re.findall(r'title = ([A-Za-z0-9_.]+)', s))
@@ -115,18 +123,13 @@ loc_missing = sorted(x for x in want - keys if x and not x.startswith('$'))
 print('5) 本地化键 %d | 需要 %d | 缺失 %d' % (len(keys), len(want), len(loc_missing)))
 
 # ---------- 6. load_focus_tree 指向 ----------
-trees = set()
-for g in scan(MOD, 'common/national_focus/*.txt'):
-    trees |= set(re.findall(r'focus_tree = \{\s*\n\s*id = ([A-Za-z0-9_]+)', rd(g), re.M))
-for f in scan(PARENT, 'common/national_focus/*.txt'):
-    trees |= set(re.findall(r'focus_tree = \{\s*\n\s*id = ([A-Za-z0-9_]+)', rd(f), re.M))
 tree_missing = []
 for f in scan(MOD, 'common/decisions/**/*.txt') + scan(MOD, 'common/decisions/*.txt'):
     s = rd(f)
     for tree in re.findall(r'load_focus_tree = \{\s*tree = ([A-Za-z0-9_]+)', s):
         if tree not in trees:
             tree_missing.append('%s -> %s' % (os.path.basename(f), tree))
-print('6) load_focus_tree 指向不存在的树 %d' % (len(tree_missing)))
+print('6) 国策树 %d 棵，load_focus_tree 指向不存在 %d' % (len(trees), len(tree_missing)))
 
 # ---------- 汇总 ----------
 print('\n' + '=' * 52)
