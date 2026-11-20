@@ -6,7 +6,7 @@
 理念缺失、本地化缺键、load_focus_tree 指向不存在的树。
 
 用法:
-    python preflight.py <你的mod目录> [TNO或母mod目录]
+    python preflight.py <你的mod目录> [母mod目录] [游戏本体目录]
 
     # 例
     python preflight.py "D:/mods/si_xiaolin" "D:/steam/workshop/content/394360/2438003901"
@@ -28,6 +28,7 @@ if len(sys.argv) < 2:
 
 MOD = os.path.abspath(sys.argv[1])
 PARENT = os.path.abspath(sys.argv[2]) if len(sys.argv) > 2 else None
+GAME = os.path.abspath(sys.argv[3]) if len(sys.argv) > 3 else None
 
 if not os.path.isdir(MOD):
     print('mod 目录不存在: %s' % MOD)
@@ -46,6 +47,7 @@ def scan(root, pattern):
 
 print('mod      = %s' % MOD)
 print('parent   = %s' % (PARENT or '(未提供，母 mod 资源不参与去重)'))
+print('game     = %s' % (GAME or '(未提供，本体 sprite 不参与去重)'))
 print('-' * 52)
 
 # ---------- 1. 括号 ----------
@@ -59,7 +61,7 @@ print('1) 脚本文件 %d 个，括号问题 %d' % (len(txts), len(P['braces']))
 
 # ---------- 2. sprite ----------
 sprites = set()
-for root in (PARENT, MOD):
+for root in (GAME, PARENT, MOD):
     for f in scan(root, '*.gfx'):
         sprites |= set(re.findall(r'name\s*=\s*"(GFX_[A-Za-z0-9_]+)"', rd(f)))
 used = set()

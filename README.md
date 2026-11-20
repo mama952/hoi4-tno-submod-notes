@@ -34,13 +34,17 @@ HOI4 的脚本引擎有几个特点，让报错信息极具误导性：
 ### 体检脚本怎么用
 
 ```bash
-python tools/preflight.py <你的mod目录> [母mod目录]
+python tools/preflight.py <你的mod目录> [母mod目录] [游戏本体目录]
 # 例
-python tools/preflight.py "D:/mods/si_xiaolin" "D:/steam/workshop/content/394360/2438003901"
+python tools/preflight.py "D:/mods/si_xiaolin" \
+    "D:/steam/workshop/content/394360/2438003901" \
+    "D:/steam/steamapps/common/Hearts of Iron IV"
 ```
 
-母 mod 目录可选，但强烈建议给：给了才知道你引用的图标 / 事件 id 是不是母 mod 里已经有的，
-否则全是误报。**改一次跑一次，比进游戏试快 20 倍。**
+母 mod 目录与游戏本体目录都可选，**但两个都建议给**：
+只扫本 mod 的话，你引用母 mod 的图标会被误报缺失；不扫本体的话，
+你引用原版通用图标（`GFX_focus_generic_*` 之类）也会被误报缺失。
+**改一次跑一次，比进游戏试快 20 倍。**
 
 它查六件事：括号失衡、引用图标未定义、事件 id 未定义、理念未定义、
 本地化缺键（含 yml 漏 BOM）、`load_focus_tree` 指向不存在的树。
